@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, Unique } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column, Unique, CreateDateColumn } from "typeorm";
 
 @Entity()
 export class ShareBoxURL {
@@ -16,7 +16,7 @@ export class ShareBoxURL {
     @Column()
     expiresAt: Date;
 
-    @Column()
+    @CreateDateColumn()
     createdAt: Date;
 
 }
