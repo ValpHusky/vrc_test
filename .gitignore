@@ -1,0 +1,12 @@
+.DS_Store
+
+
+# Dependencies
+/node_modules
+/dist
+
+# Environment
+.env
+
+# Logs
+
