@@ -1,12 +1,27 @@
 import { randomBytes } from 'crypto';
+import { ShareBoxURL } from './entity.ShareboxURL';
 
 export function generateCode(): string {
-    // Generate 6 random bytes.
     const buffer = randomBytes(5);
-
-    // Convert to a URL-safe base64 string. This will be 8 characters long.
-    // (6 bytes * 8 bits/byte) / 6 bits/char = 8 characters.
-    // It replaces '+' with '-' and '/' with '_', and removes padding.
     return buffer.toString('base64url');
+}
+
+export function createShareBoxResponse(sharebox: ShareBoxURL) {
+    return { id: sharebox.id, shortLink: `${process.env.BASE_URL}/${sharebox.code}` }
+}
+
+export function isValidUrl(url: string): boolean {
+    try {
+        new URL(url);
+        return true;
+    } catch (error) {
+        return false;
+    }
+}
+
+export function generateExpirationDate(mins: number = 1): Date {
+    const expirationDate = new Date(Date.now());
+    expirationDate.setMinutes(expirationDate.getMinutes() + mins);
+    return expirationDate;
 }
 
