@@ -1,0 +1,76 @@
+# render.yaml
+services:
+  - type: web
+    name: vrc-sharebox-api
+    env: docker
+    # A Dockerfile is expected in the root of your repository.
+    # If your Dockerfile is in a subdirectory (e.g., 'api/Dockerfile'),
+    # you would use:
+    # build:
+    #   context: ./api
+    #   dockerfilePath: ./api/Dockerfile
+    # Render will automatically build the Docker image from your Dockerfile.
+
+    # The startCommand should be the command to run your application in production.
+    # It's recommended to have a dedicated 'start' script in your package.json
+    # that builds and runs your app for production (e.g., `node build/index.js`).
+    # If 'npm run dev' is your intended production command, you can use that.
+    startCommand: npm run start # Make sure you have a 'start' script in package.json
+
+    # This is the internal port your Node.js app listens on inside the container.
+    # Render will map this to its external PORT (e.g., 10000).
+    ports:
+      - 3000
+
+    envVars:
+      - key: NODE_ENV
+        value: production # Important for production deployments
+      # Render automatically injects a `PORT` environment variable.
+      # Your Node.js application should listen on `process.env.PORT`
+      # (or `process.env.APP_PORT` if you prefer to keep your existing variable,
+      # but then you'd need to explicitly set APP_PORT here).
+      # For simplicity, it's often best to make your app listen on `process.env.PORT || 3000`.
+
+      # Render's managed PostgreSQL service will expose connection details.
+      # Many ORMs and database clients can use a single DATABASE_URL.
+      - key: DATABASE_URL
+        fromDatabase:
+          name: sharebox-db # Refers to the database service defined below
+          property: connectionString
+
+      # If your application expects separate environment variables for the database
+      # (e.g., POSTGRES_HOST, POSTGRES_USER, etc.), you would uncomment and configure these.
+      # Ensure your application code reads these environment variables.
+      - key: POSTGRES_HOST
+        fromDatabase:
+          name: sharebox-db
+          property: host
+      - key: POSTGRES_PORT
+        fromDatabase:
+          name: sharebox-db
+          property: port
+      - key: POSTGRES_USER
+        fromDatabase:
+          name: sharebox-db
+          property: user
+      - key: POSTGRES_PASSWORD
+        fromDatabase:
+          name: sharebox-db
+          property: password
+      - key: POSTGRES_DB
+        fromDatabase:
+          name: sharebox-db
+          property: database
+
+    # Optional: Add a health check path if your API has one
+    healthCheckPath: /health
+
+  - type: pserv # This defines a managed PostgreSQL service
+    name: sharebox-db
+    plan: free # Render offers a free tier for PostgreSQL, great for showcases!
+    databaseName: sharebox_db # Matches the POSTGRES_DB from your .env
+    user: sharebox_user       # Matches the POSTGRES_USER from your .env
+    # Render will automatically generate a strong password for this user.
+    # This password will be part of the DATABASE_URL and POSTGRES_PASSWORD env vars
+    # that are exposed to your web service.
+    # You can specify a PostgreSQL version if needed, e.g., version: "15"
